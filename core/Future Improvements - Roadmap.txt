@@ -1,0 +1,52 @@
+SDE Modular — Future Improvements & Roadmap
+Built 2025-08-10 11:56:34 UTC
+
+SHORT-TERM NEXT STEPS
+1) Transactions page (stability-first)
+   - Keep this known-good Transactions file as the baseline.
+   - Re-introduce compact layout/column widths carefully (Doc 5%, Date 13%, Description 20%, Debit 14%, Credit 14%, Amount 10%, CC 10%, Actions 14%) once stable.
+   - Ensure redirect back to Transactions after save is always applied.
+   - Add edit/delete per row (existing behavior retained) and guard with capability: admins only.
+
+2) Accounts
+   - Confirm grouped sections and totals: Assets → Total Assets, Equity → Total Equity, Revenue, Expense → Total Expense, and derived “Profit/Loss” (Revenue − Expense).
+   - Add date/YTD/QTD/MTD filters on Account detail (ledger-like) view.
+   - From Accounts table, clicking an account opens its detail in a new tab (done); add CSV export for that list.
+
+3) Cost Centers (Phase A done: CPT + Sync + Exclude)
+   - Verify VikRentCar sync idempotency on live DB and log inserted/updated counts.
+   - Keep “Exclude from accounting” switch; propagate exclusion to all filters/reports that reference CC.
+   - Optional: quick toggle from list table.
+
+4) Cost Centers (Phase B fields & workflows)
+   - Data fields: initial price, photos, buying/selling contracts, registration docs, depreciation account (3320), maintenance log with km and details, key number/codes, known-issues list.
+   - Depreciation: auto-generate schedules and journal entries (monthly), post to 3320 and accumulated depreciation.
+   - Attachments: upload & preview documents; link to CC.
+   - Reporting: per-CC P&L and unit economics.
+
+5) Ledger Page
+   - Dedicated ledger with account filter prefilled from Accounts click; supports date range + YTD/QTD/MTD; CSV export.
+
+6) Permissions & UX
+   - Enforce admin-only for create/update/delete of transactions.
+   - Consistent notices after actions (saved/updated/deleted).
+
+7) DB & Reliability
+   - Add DB indexes on journals(entry_no, trn_date) and journal_lines(account_id, journal_id).
+   - Migrate prefixes safely; guard against missing tables and schema drift.
+   - Zero-fatal policy: trap and surface errors in admin notices, not white screens.
+
+LONGER-TERM / FUTURE PROJECTS
+- Financial statements: P&L and Balance Sheet (period & year-over-year comparisons).
+- Budgeting module and variance analysis.
+- Multi-currency support (if required) and exchange-rate snapshots.
+- Audit trail for edits (who/when/what changed).
+- CSV import/export for journals and accounts.
+- API endpoints for external systems; webhooks for sync.
+- Dashboard widgets: CC performance, maintenance cost per km, depreciation impact.
+- Media/Docs storage abstraction (local/S3).
+- Role-based access beyond admins (accountants, managers).
+
+NOTES
+- When changing Transactions UI next, only adjust markup/CSS; do not alter the working save/query logic until tests are green.
+- Treat Cost Center re-introduction on Transactions (filters/columns) as a separate, guarded feature branch to avoid regressions.

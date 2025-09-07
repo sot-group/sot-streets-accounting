@@ -1,0 +1,1 @@
+- Add editing function or deep link from Accounts → Transactions for a specific row.

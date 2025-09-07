@@ -1,0 +1,57 @@
+<?php
+namespace SDEM\UI;
+if (!defined('ABSPATH')) exit;
+class Router {
+    public static function init(){
+        add_action('admin_menu', [__CLASS__,'menu']);
+        add_action('admin_enqueue_scripts', function($hook){
+            if (strpos($hook, 'sde-modular') === false) return;
+            wp_enqueue_style('sdem-admin', SDEM_URL.'assets/css/admin.css', [], SDEM_VER);
+            wp_enqueue_script('sdem-admin', SDEM_URL.'assets/js/admin.js', ['jquery'], SDEM_VER, true);
+        });
+    }
+    public static function menu(){
+        add_menu_page('SDE', 'Accounting', 'manage_options', 'sde-modular', [__CLASS__,'page_accounts'], 'dashicons-chart-line', 42);
+        add_submenu_page('sde-modular', 'Accounts', 'Accounts', 'manage_options', 'sde-modular', [__CLASS__,'page_accounts']);
+        add_submenu_page('sde-modular', 'Account', 'Account', 'manage_options', 'sde-modular-account', [__CLASS__, 'page_account']);
+        add_submenu_page('sde-modular', 'Transactions', 'Transactions', 'manage_options', 'sde-modular-trans', [__CLASS__,'page_transactions']);
+        add_submenu_page('sde-modular', 'Cost Centers', 'Cost Centers', 'manage_options', 'sde-modular-cc', [__CLASS__,'page_costcenters']);
+        add_submenu_page('sde-modular', 'Cost Center Sync', 'Cost Center Sync', 'manage_options', 'sde-modular-cc-sync', [__CLASS__,'page_cc_sync']);
+        add_submenu_page('sde-modular', 'Key Numbers', 'Key Numbers', 'manage_options', 'sde-modular-kpi', [__CLASS__,'page_keynumbers']);
+        add_submenu_page('sde-modular', 'VIKCar Sync', 'VIKCar Sync', 'manage_options', 'sde-modular-vik', [__CLASS__,'page_vik']);
+        add_submenu_page('sde-modular', 'Health Check', 'Health Check', 'manage_options', 'sde-modular-health', [__CLASS__,'page_health']);
+    }
+    private static function dates(){
+        $today = current_time('Y-m-d');
+        $y = date('Y', strtotime($today));
+        $start_year = $y . '-01-01';
+        $end_year = $y . '-12-31';
+        $from = isset($_GET['from']) ? sanitize_text_field($_GET['from']) : $start_year;
+        $to   = isset($_GET['to'])   ? sanitize_text_field($_GET['to'])   : $end_year;
+        return [$from, $to];
+    }
+    public static function page_accounts(){
+        list($from, $to) = self::dates();
+        require_once SDEM_PATH . 'views/accounts/index.php';
+    }
+    public static function page_transactions(){
+        list($from, $to) = self::dates();
+        require_once SDEM_PATH . 'views/transactions/index.php';
+    }
+    public static function page_cc_sync(){ require_once SDEM_PATH . 'includes/admin/sync-costcenters.php'; }
+    public static function page_costcenters(){
+        if (!current_user_can('manage_options')) wp_die('Insufficient permissions');
+        $url = admin_url('edit.php?post_type=sde_cost_center');
+        if (!headers_sent()){ wp_safe_redirect($url); exit; } else { echo '<script>window.location.href=' . json_encode($url) . ';</script>'; exit; }
+    }
+    public static function page_account(){ require_once SDEM_PATH . 'views/accounts/detail.php'; }
+    public static function page_keynumbers(){
+        echo '<div class="wrap"><h1>Key Numbers</h1><p>Milestone M4 stub.</p></div>';
+    }
+    public static function page_vik(){
+        echo '<div class="wrap"><h1>VIKCar Sync</h1><p>Milestone M5 stub (mapping & import).</p></div>';
+    }
+    public static function page_health(){
+        require_once SDEM_PATH . 'views/partials/health.php';
+    }
+}
